@@ -1,12 +1,9 @@
 package maneuvergui;
 
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Random;
 import javax.swing.DefaultListModel;
-import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 
@@ -22,7 +19,6 @@ import javax.swing.table.DefaultTableModel;
 public class ManeuverGUI extends javax.swing.JFrame {
 
     DefaultTableModel model;
-    addManeuvers newManeuvers = new addManeuvers();
 
     /**
      * Creates new form Maneuvers
@@ -32,12 +28,12 @@ public class ManeuverGUI extends javax.swing.JFrame {
         randomizeManeuvers();
         fillLists();
         initComponents();
-        this.newManeuvers.addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowClosing(WindowEvent e) {
-                updateManeuvers();
-            }
-        });
+//        this.newManeuvers.addWindowListener(new WindowAdapter() {
+//            @Override
+//            public void windowClosing(WindowEvent e) {
+//                updateManeuvers();
+//            }
+//        });
     }
 
     @SuppressWarnings("unchecked")
@@ -99,6 +95,35 @@ public class ManeuverGUI extends javax.swing.JFrame {
             updateManeuvers();
     }
     
+    public void useManeuver(){
+        if (!withheld.isEmpty()) {
+                grantedModel.addElement(withheld.get(0));
+                granted.add(withheld.get(0));
+                withheld.remove(0);
+            } else {
+                randomizeManeuvers();
+
+                grantedModel.clear();
+                for (String grant : granted) {
+                    grantedModel.addElement(grant);
+                }
+                expendedModel.clear();
+                for (String expend : expended) {
+                    expendedModel.addElement(expend);
+                }
+            }
+
+            if (grantedList.isSelectionEmpty() == false) {
+                for (Object x : granted) {
+                    for (Object y : grantedList.getSelectedValuesList()) {
+                        if (x.equals(y)) {
+                            expendedModel.addElement(x);
+                            grantedModel.removeElement(x);
+                        }
+                    }
+                }
+            }
+    }
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -118,12 +143,12 @@ public class ManeuverGUI extends javax.swing.JFrame {
         jScrollPane2 = new javax.swing.JScrollPane();
         grantedList = new javax.swing.JList();
         jLabel2 = new javax.swing.JLabel();
-        jButton2 = new javax.swing.JButton();
+        useButton = new javax.swing.JButton();
         jPanel4 = new javax.swing.JPanel();
         jScrollPane3 = new javax.swing.JScrollPane();
         expendedList = new javax.swing.JList();
         jLabel1 = new javax.swing.JLabel();
-        useButton = new javax.swing.JButton();
+        jButton2 = new javax.swing.JButton();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         jMenuItem1 = new javax.swing.JMenuItem();
@@ -188,15 +213,20 @@ public class ManeuverGUI extends javax.swing.JFrame {
         grantedList.setModel(grantedModel);
         grantedList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         grantedList.setName(""); // NOI18N
+        grantedList.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                grantedListMouseClicked(evt);
+            }
+        });
         jScrollPane2.setViewportView(grantedList);
 
         jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel2.setText("Granted");
 
-        jButton2.setText("Randomize Maneuvers");
-        jButton2.addActionListener(new java.awt.event.ActionListener() {
+        useButton.setText("Use Maneuver");
+        useButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton2ActionPerformed(evt);
+                useButtonActionPerformed(evt);
             }
         });
 
@@ -206,20 +236,23 @@ public class ManeuverGUI extends javax.swing.JFrame {
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jScrollPane2)
-                    .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(jScrollPane2)
+                            .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addComponent(useButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
                 .addComponent(jLabel2)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane2)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 295, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jButton2)
+                .addComponent(useButton)
                 .addContainerGap())
         );
 
@@ -230,10 +263,10 @@ public class ManeuverGUI extends javax.swing.JFrame {
         jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel1.setText("Expended");
 
-        useButton.setText("Use Maneuver");
-        useButton.addActionListener(new java.awt.event.ActionListener() {
+        jButton2.setText("Randomize Maneuvers");
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                useButtonActionPerformed(evt);
+                jButton2ActionPerformed(evt);
             }
         });
 
@@ -243,23 +276,20 @@ public class ManeuverGUI extends javax.swing.JFrame {
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel4Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(useButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(jPanel4Layout.createSequentialGroup()
-                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 259, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(0, 0, Short.MAX_VALUE)))
-                .addContainerGap())
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                    .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jScrollPane3)
+                    .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel4Layout.setVerticalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
                 .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 295, Short.MAX_VALUE)
+                .addComponent(jScrollPane3)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(useButton)
+                .addComponent(jButton2)
                 .addContainerGap())
         );
 
@@ -355,8 +385,14 @@ public class ManeuverGUI extends javax.swing.JFrame {
                 "Are you sure you want to clear all readied maneuvers?",
                 "Clear Readied Maneuvers",
                 JOptionPane.YES_NO_OPTION);
-        if (n == 1) {
+        if (n == 0) {
+            System.out.println("OK");
             this.readied.clear();
+                this.readiedList.removeAll();
+            this.granted.clear();
+                this.grantedList.removeAll();
+            this.expended.clear();
+                this.expendedList.removeAll();
         }
         updateManeuvers();
     }//GEN-LAST:event_jMenuItem2ActionPerformed
@@ -373,34 +409,8 @@ public class ManeuverGUI extends javax.swing.JFrame {
 
     //Use Maneuver
     private void useButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_useButtonActionPerformed
-            if (evt.getSource() == useButton) {
-            if (withheld.isEmpty() == false) {
-                grantedModel.addElement(withheld.get(0));
-                granted.add(withheld.get(0));
-                withheld.remove(0);
-            } else {
-                randomizeManeuvers();
-
-                grantedModel.clear();
-                for (String grant : granted) {
-                    grantedModel.addElement(grant);
-                }
-                expendedModel.clear();
-                for (String expend : expended) {
-                    expendedModel.addElement(expend);
-                }
-            }
-
-            if (grantedList.isSelectionEmpty() == false) {
-                for (Object x : granted) {
-                    for (Object y : grantedList.getSelectedValuesList()) {
-                        if (x.equals(y)) {
-                            expendedModel.addElement(x);
-                            grantedModel.removeElement(x);
-                        }
-                    }
-                }
-            }
+        if (evt.getSource() == useButton && !grantedList.isSelectionEmpty()) {
+            useManeuver();
         }
     }//GEN-LAST:event_useButtonActionPerformed
 
@@ -414,6 +424,15 @@ public class ManeuverGUI extends javax.swing.JFrame {
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         addManeuver();
     }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void grantedListMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_grantedListMouseClicked
+        // TODO add your handling code here:
+        if (evt.getClickCount() == 2) {
+            if (!grantedList.isSelectionEmpty()) {
+                useManeuver();
+            }
+        }
+    }//GEN-LAST:event_grantedListMouseClicked
 
     /**
      * @param args the command line arguments
